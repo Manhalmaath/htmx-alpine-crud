@@ -1,29 +1,101 @@
-    <script>
-        function tableOperations() {
-            return {
-                show: false,
-                blogs: [],
+<script>
+    function tableOperations() {
+        return {
+            show: false,
+            blogs: [],
+            fetchAll() {
+                this.blogs = []
+                fetch('/blog/all')
+                    .then(response => response.json())
+                    .then(data => this.blogs = data)
+            },
+            init() {
+                this.fetchAll();
+            },
 
-                init() {
-                    this.blogs =  [{
-                        id: 1,
-                        title: 'test',
-                        description: 'value'
-                    }, {
-                        id: 2,
-                        title: 'test',
-                        description: 'value'
-                    }]
-                },
-
-               async addBlog() {
-                    let response = await fetch('')
-                   let message = response.json()
-                   if(response.status ==200) {
-                       this.blogs.push()
-                   }
+            async addBlog({title, description}) {
+                const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value
+                let response = await fetch('/blog/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrf_token,
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        description: description,
+                    }),
+                })
+                let message = response.json()
+                console.log(message)
+                if (response.status === 200) {
+                    this.fetchAll()
                 }
-            }
-        }
+                this.title = ''
+                this.description = ''
+            },
 
-    </script>
+            updateBlog(id, title, description) {
+                const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value
+                fetch(`/blog/update/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrf_token,
+                    },
+                    body: JSON.stringify({
+                        id: id,
+                        title: title,
+                        description: description,
+                    }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        this.fetchAll()
+                    })
+
+            },
+
+            delete_all() {
+                const check_list = document.querySelectorAll('input[name="id"]:checked')
+                const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value
+                let id_list = []
+                check_list.forEach((item) => {
+                    id_list.push(item.value)
+                })
+                fetch(`/blog/delete/all`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrf_token,
+                    },
+                    body: JSON.stringify({
+                        id_list: id_list,
+                    }),
+                })
+                    .then(data =>this.fetchAll())
+            }
+            ,
+
+            deleteBlog(id) {
+                const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value
+                fetch(`/blog/delete/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrf_token,
+                    },
+                    body: JSON.stringify({
+                        id: id,
+                    }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        this.fetchAll()
+                    })
+            }
+
+        }
+    }
+
+</script>

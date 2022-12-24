@@ -12,7 +12,7 @@ class Blog(models.Model):
     def get_url(self):
         return '/blog/update/1'
 
-    def serilize(self):
-        return {th}
-
-
+    def serialize(self):
+        return {'id': self.id,
+                'title': self.title,
+                'description': self.description}
